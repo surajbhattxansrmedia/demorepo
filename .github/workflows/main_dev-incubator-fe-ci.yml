@@ -7,37 +7,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Log in to Azure Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: coreincubatorci.azurecr.io  # FIXED
-        username: ${{ secrets.AzureAppService_ContainerUsername_a8ea9cac305743b390d978192964524d }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_1eb2664792454ea3a6811e67b9b59853 }}
-
-    - name: Build and push container image to ACR
-      uses: docker/build-push-action@v3
-      with:
-        push: true
-        tags: coreincubatorci.azurecr.io/my-html-site:${{ github.sha }}  # FIXED
-        file: ./Dockerfile
-
   deploy:
     runs-on: ubuntu-latest
-    needs: build
     environment:
       name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
+    - name: Log in to Azure Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: coreincubatorci.azurecr.io
+        username: ${{ secrets.AzureAppService_ContainerUsername_a8ea9cac305743b390d978192964524d }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_1eb2664792454ea3a6811e67b9b59853 }}
+
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
@@ -45,4 +28,4 @@ jobs:
         app-name: 'dev-incubator-fe-ci'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_f8ad00da5b3f434aab1338ee54c82bbd }}
-        images: 'coreincubatorci.azurecr.io/my-html-site:${{ github.sha }}'  # FIXED
+        images: 'coreincubatorci.azurecr.io/my-html-site:latest'  # Use latest tag or update as needed
