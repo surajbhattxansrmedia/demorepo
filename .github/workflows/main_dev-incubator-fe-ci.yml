@@ -9,17 +9,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
     - name: Log in to Azure Container Registry
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
-        registry: coreincubatorci.azurecr.io
-        username: ${{ secrets.AzureAppService_ContainerUsername_a8ea9cac305743b390d978192964524d }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_1eb2664792454ea3a6811e67b9b59853 }}
+      registry:  ${{ secrets.DEFAULT_REGISTRY_SERVER }}
+      username: ${{ secrets.DEFAULT_REGISTRY_USERNAME }}
+      password: ${{ secrets.DEFAULT_REGISTRY_PASSWORD }}
 
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
@@ -27,5 +24,5 @@ jobs:
       with:
         app-name: 'dev-incubator-fe-ci'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_f8ad00da5b3f434aab1338ee54c82bbd }}
+        publish-profile: ${{ secrets.Publish_Profile}}
         images: 'coreincubatorci.azurecr.io/my-html-site:latest'  # Use latest tag or update as needed
